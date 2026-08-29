@@ -1,0 +1,47 @@
+# Godot-specific ignores
+.godot/
+.import/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.translation
+
+# Imported translations (automatically generated from CSV files)
+*.po
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Godot-specific ignores
+android/plugins/
+
+# System/tool-specific ignores
+.directory
+*~
+
+# Godot 4+ specific ignores
+*.uid
+*.import.backup
+
+# Build outputs (don't commit binaries)
+build/
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
