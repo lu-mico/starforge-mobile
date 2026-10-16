@@ -1,3 +1,4 @@
+class_name UnitSpawner
 extends Node
 ## UnitSpawner — handles keypress 1/2 spawning for v0.1 MVP.
 ## Real drag-to-lane deploy is v0.3 polish; this proves the spawn + economy wiring.
