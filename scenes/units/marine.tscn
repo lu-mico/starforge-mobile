@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://b1starforge_marine"]
+
+[ext_resource type="Script" path="res://src/units/Marine.gd" id="1_marine"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_marine"]
+size = Vector2(20, 20)
+
+[node name="Marine" type="CharacterBody2D"]
+script = ExtResource("1_marine")
+
+[node name="Sprite" type="ColorRect" parent="."]
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+color = Color(0.2, 0.6, 1.0, 1.0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_marine")

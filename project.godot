@@ -21,6 +21,10 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
 window/handheld/orientation="portrait"
 
+[autoload]
+
+MineralField="*res://src/core/MineralField.gd"
+
 [input]
 
 deploy_unit={
