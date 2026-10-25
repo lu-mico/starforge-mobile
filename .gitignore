@@ -23,7 +23,9 @@ android/plugins/
 *~
 
 # Godot 4+ specific ignores
-*.uid
+# NOTE: *.uid is deliberately NOT ignored. Godot 4.4+ assigns each script a
+# stable UID that scenes reference. Regenerating them per-clone breaks
+# scene->script links. Keep them in VCS (same fix as starlight-jump eb07fbc).
 *.import.backup
 
 # Build outputs (don't commit binaries)
