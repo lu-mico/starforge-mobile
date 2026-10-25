@@ -8,7 +8,22 @@ Real-time strategy meets lane-battle (Clash Royale-style pacing). 5-8 minute mat
 
 ## Status
 
-**v0.1 (pre-dev)** — project scaffolding, GDD locked, awaiting implementation kickoff.
+**v0.1.0-alpha.1** — playable skeleton, in active development.
+
+| | Status |
+|---|---|
+| Godot 4.6 project + GitHub repo | ✅ |
+| Mineral economy (5/10, +1 per 2.0s) | ✅ verified by `tests/smoke_test.tscn` |
+| Marine + Hellion: walk / attack / take damage / die | ✅ verified |
+| APK builds + installs + launches on Android emulator | ✅ verified 2026-10-25 |
+| 3 lanes + towers with HP | 🔶 1 lane, `EnemyTower` has no HP script |
+| 4-unit roster | 🔶 2 of 4 (Marauder + Siege Tank pending) |
+| Card hand + drag-to-lane deploy | ❌ keyboard `1`/`2` spawn only |
+| AI opponent | ❌ not started |
+| Win/Lose screen | ❌ not started |
+
+Target: v0.1 **2026-11-15** (re-baselined from 2026-09-12 — see
+[Project Plan](docs/PROJECT_PLAN.md#schedule-re-baseline-2026-10-25)).
 
 ## Quick Links
 
