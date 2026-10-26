@@ -175,7 +175,14 @@ class Grid:
                 self.set(x, y, c)
 
     def outline(self, c='K'):
-        """1px ink border around the silhouette (transparent neighbours only)."""
+        """1px ink border around the silhouette (transparent neighbours only).
+
+        Idempotent: the ink ring is derived from the ORIGINAL silhouette, so
+        calling this twice does NOT grow the silhouette by another ring.
+        (Calling it on an already-outlined grid used to add a second ring.)
+        """
+        if getattr(self, '_outlined', False):
+            return
         add = {}
         for (x, y) in list(self.px.keys()):
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -183,6 +190,7 @@ class Grid:
                 if 0 <= nx < self.w and 0 <= ny < self.h and (nx, ny) not in self.px:
                     add[(nx, ny)] = c
         self.px.update(add)
+        self._outlined = True
 
     def to_image(self):
         img = Image.new('RGBA', (self.w, self.h), (0, 0, 0, 0))
@@ -461,7 +469,7 @@ def pose_death3():
         arm_front=((17, 11), (19, 14), (20, 15)),
         rifle_pos=(20, 15),
     )
-    tf = T_chain(T_rot(-42, 13.0, 27.0, 0.82), T_shift(1.5, 1.0))
+    tf = T_chain(T_rot(-42, 13.0, 27.0, 0.82), T_shift(1.5, -1.0))
     return render(ops, tf)
 
 

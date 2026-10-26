@@ -111,10 +111,10 @@ def export(repo):
     here = os.path.dirname(os.path.abspath(__file__))
     module_src = os.path.join(here, "marine_sprite_sheet.py")
     module_dst = os.path.join(tools_dir, "marine_sprite_sheet.py")
-    if os.path.abspath(module_src) != os.path.abspath(module_dst):
+    if os.path.realpath(module_src) != os.path.realpath(module_dst):
         shutil.copy2(module_src, module_dst)
     gen_dst = os.path.join(tools_dir, "marine_sprite_generator.py")
-    if os.path.abspath(__file__) != os.path.abspath(gen_dst):
+    if os.path.realpath(__file__) != os.path.realpath(gen_dst):
         shutil.copy2(__file__, gen_dst)
     return out_dir
 
