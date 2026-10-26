@@ -20,7 +20,12 @@ from sprite_export import export_unit, verify_exports
 FPS = {"idle": 2, "walk": 6, "attack": 8, "death": 4}
 LOOP = {"idle": True, "walk": True, "attack": False, "death": False}
 
-GODOT_LINE = "- [ ] Godot 4.6 导入测试 —— **待实跑确认**（同 Marine 管线，建议用同一套 SpriteFrames 检查）"
+GODOT_LINE = ("- [x] Godot 4.6 导入测试通过 —— Nagi 实测 **20/20 全过**"
+              "（4.6.stable.official.89cea1439：48×48 strip 导入 / SpriteFrames 4 段动画 / "
+              "region 映射 / AnimatedSprite2D 播放 / fps 生效 / flip_h / hframes=13 / "
+              "Nearest 采样 / .import 齐全）—— 复跑："
+              "`godot --headless --script tools/accept_sprite_import.gd -- "
+              "res://assets/sprites/siege_tank/siege_tank_frames.json`")
 
 DISCLOSURE = "- [x] 声明「非 AI 生成」（确定性代码绘制）→ 商店审核披露最简"
 

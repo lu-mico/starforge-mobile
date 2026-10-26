@@ -49,7 +49,7 @@
 - [x] 透明背景 PNG-32，帧间距 0px（≤2px）
 - [x] 命名规范 `<unit>_<state>_<index>.png` + 帧表
 - [x] **三处导出像素一致**（单帧 == strip 格 == grid 格）由 `verify_exports()` 硬校验
-- [x] Godot 4.6 导入测试通过 —— Nagi 实测 **18/18 全过**（4.6.stable.official.89cea1439：SpriteFrames 4 段动画 / region 映射 / AnimatedSprite2D 播放 / flip_h / hframes=13 / Nearest 采样）
+- [x] Godot 4.6 导入测试通过 —— Nagi 实测 **20/20 全过**（4.6.stable.official.89cea1439：32×32 strip 导入 / SpriteFrames 4 段动画 / region 映射 / AnimatedSprite2D 播放 / fps 生效 / flip_h / hframes=13 / Nearest 采样 / .import 齐全）—— 复跑：`godot --headless --script tools/accept_sprite_import.gd -- res://assets/sprites/marine/marine_frames.json`
 - [x] 声明「非 AI 生成」（确定性代码绘制）→ 商店审核披露最简
 
 ## 重生成
