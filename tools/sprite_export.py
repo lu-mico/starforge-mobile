@@ -113,32 +113,35 @@ def export_unit(unit, cell, frame_images, frame_spec, out_dir, fps, loop,
     return meta
 
 
-def verify_exports(out_dir, unit, cell, count, expect_empty_tail=True):
+def verify_exports(out_dir, unit, cell, count, expect_empty_tail=True, cell_h=None):
     """Hard gate — every frame must be pixel-identical across
-    single PNG / horizontal-strip cell / 4x4-grid cell, alpha in {0,255},
-    <=16 colours, and nothing may overflow its cell."""
+    single PNG / horizontal-strip cell / review-grid cell, alpha in {0,255},
+    <=16 colours, and nothing may overflow its cell.
+
+    cell_h allows non-square cells (e.g. 40x60 towers)."""
+    cell_h = cell_h or cell
     meta = json.load(open(os.path.join(out_dir, f"{unit}_frames.json")))
-    strip = Image.open(os.path.join(out_dir, f"{unit}_sheet_strip13.png")).convert("RGBA")
-    grid = Image.open(os.path.join(out_dir, f"{unit}_sheet_grid4x4.png")).convert("RGBA")
-    assert strip.size == (cell * count, cell), strip.size
-    assert grid.size == (GRID_COLS * cell + (GRID_COLS - 1),
-                          GRID_ROWS * cell + (GRID_ROWS - 1)), grid.size
+    strip = Image.open(os.path.join(out_dir, meta["strip"])).convert("RGBA")
+    grid = Image.open(os.path.join(out_dir, meta["grid"])).convert("RGBA")
+    assert strip.size == (cell * count, cell_h), strip.size
+    cols = max(1, round((grid.width + 1) / (cell + GUT)))
+    rows = max(1, round((grid.height + 1) / (cell_h + GUT)))
     for fr in meta["frames"]:
         i = fr["index"]
         single = Image.open(os.path.join(out_dir, fr["name"] + ".png")).convert("RGBA")
-        strip_cell = strip.crop((i * cell, 0, (i + 1) * cell, cell))
-        c, r = i % GRID_COLS, i // GRID_COLS
-        grid_cell = grid.crop((c * (cell + GUT), r * (cell + GUT),
-                               c * (cell + GUT) + cell, r * (cell + GUT) + cell))
+        strip_cell = strip.crop((i * cell, 0, (i + 1) * cell, cell_h))
+        c, r = i % cols, i // cols
+        grid_cell = grid.crop((c * (cell + GUT), r * (cell_h + GUT),
+                               c * (cell + GUT) + cell, r * (cell_h + GUT) + cell_h))
         assert single.tobytes() == strip_cell.tobytes(), f"{fr['name']}: strip mismatch"
         assert single.tobytes() == grid_cell.tobytes(), f"{fr['name']}: grid mismatch"
         px = list(single.getdata())
         assert {p[3] for p in px} == {0, 255}, f"{fr['name']}: soft alpha"
         assert len({p for p in px if p[3] == 255}) <= 16, f"{fr['name']}: >16 colours"
     if expect_empty_tail:
-        for idx in range(count, GRID_COLS * GRID_ROWS):
-            c, r = idx % GRID_COLS, idx // GRID_COLS
-            box = (c * (cell + GUT), r * (cell + GUT),
-                   c * (cell + GUT) + cell, r * (cell + GUT) + cell)
+        for idx in range(count, cols * rows):
+            c, r = idx % cols, idx // cols
+            box = (c * (cell + GUT), r * (cell_h + GUT),
+                   c * (cell + GUT) + cell, r * (cell_h + GUT) + cell_h)
             assert grid.crop(box).getbbox() is None, f"grid cell {idx} not empty"
     return len(meta["frames"])

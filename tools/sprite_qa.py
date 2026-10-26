@@ -58,7 +58,7 @@ def rasterizer_self_test(mod):
 
 # ---------------------------------------------------------------- 2. crop report
 
-def _render_frames(mod, padded, cell=32):
+def _render_frames(mod, padded, cell=(32, 32)):
     """Render every frame. padded=True re-renders into a bigger canvas with the
     drawing shifted, so pixels that fall outside the cell become visible
     instead of being silently dropped.
@@ -73,7 +73,7 @@ def _render_frames(mod, padded, cell=32):
             def shifted_tf(x, y):
                 sx, sy = base_tf(x, y)
                 return (sx + OFF, sy + OFF)
-            return orig_render(ops, shifted_tf, cell + 2 * OFF, cell + 2 * OFF)
+            return orig_render(ops, shifted_tf, cell[0] + 2 * OFF, cell[1] + 2 * OFF)
         mod.render = padded_render
     try:
         frames = mod.build_frames()
@@ -82,7 +82,7 @@ def _render_frames(mod, padded, cell=32):
     return frames
 
 
-def crop_report(mod, cell=32):
+def crop_report(mod, cell=(32, 32)):
     """-> list of (frame_name, [(x, y), ...]) for art the cell cannot hold."""
     real = _render_frames(mod, padded=False, cell=cell)
     padded = _render_frames(mod, padded=True, cell=cell)
@@ -98,7 +98,7 @@ def crop_report(mod, cell=32):
         lost = []
         for (x, y) in g_pad.px:
             ox, oy = x - OFF, y - OFF
-            if not (0 <= ox < cell and 0 <= oy < cell):
+            if not (0 <= ox < cell[0] and 0 <= oy < cell[1]):
                 lost.append((ox, oy))
             elif (ox, oy) not in real_px:
                 lost.append((ox, oy))
@@ -155,10 +155,11 @@ def main():
     unit = os.path.basename(os.path.abspath(out_dir))
     meta = sys.argv[3] if len(sys.argv) > 3 else f"{unit}_frames.json"
     mod = load_module(module_path)
-    cell = 32
+    cell = (32, 32)
     try:
         with open(os.path.join(out_dir, meta)) as fh:
-            cell = json.load(fh)["canvas"][0]
+            canvas = json.load(fh)["canvas"]
+            cell = (int(canvas[0]), int(canvas[1]))
     except Exception:
         pass
 
@@ -176,7 +177,7 @@ def main():
         print("         half-pixel, so every shape is drawn 1px off its declared")
         print("         rect and the silhouette hangs off the 32x32 cell.")
 
-    print(f"\n2. crop report (art the {cell}x{cell} cell cannot hold)")
+    print(f"\n2. crop report (art the {cell[0]}x{cell[1]} cell cannot hold)")
     report = crop_report(mod, cell)
     total = 0
     for name, lost in report:
