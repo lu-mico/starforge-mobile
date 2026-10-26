@@ -1,0 +1,83 @@
+[gd_resource type="SpriteFrames" load_steps=15 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/marine/marine_sheet_strip13.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0_marine_idle_1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1_marine_idle_2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2_marine_walk_1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3_marine_walk_2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4_marine_walk_3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5_marine_walk_4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6_marine_attack_1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7_marine_attack_2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(224, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8_marine_attack_3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(256, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_9_marine_death_1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(288, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_10_marine_death_2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(320, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_11_marine_death_3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(352, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_12_marine_death_4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(384, 0, 32, 32)
+
+[resource]
+animations = [
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_0_marine_idle_1")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_1_marine_idle_2")}],
+"loop": true,
+"name": &"idle",
+"speed": 2.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_2_marine_walk_1")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_3_marine_walk_2")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_4_marine_walk_3")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_5_marine_walk_4")}],
+"loop": true,
+"name": &"walk",
+"speed": 6.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_6_marine_attack_1")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_7_marine_attack_2")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_8_marine_attack_3")}],
+"loop": false,
+"name": &"attack",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_9_marine_death_1")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_10_marine_death_2")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_11_marine_death_3")}, {"duration": 1.0, "texture": SubResource("AtlasTexture_12_marine_death_4")}],
+"loop": false,
+"name": &"death",
+"speed": 4.0
+}
+]

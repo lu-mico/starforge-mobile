@@ -1,0 +1,67 @@
+[gd_resource type="SpriteFrames" load_steps=8 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/towers/towers_sheet_strip6.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0_player_tower_intact"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 40, 60)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1_player_tower_damaged"]
+atlas = ExtResource("1_sheet")
+region = Rect2(40, 0, 40, 60)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2_enemy_tower_intact"]
+atlas = ExtResource("1_sheet")
+region = Rect2(80, 0, 40, 60)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3_enemy_tower_damaged"]
+atlas = ExtResource("1_sheet")
+region = Rect2(120, 0, 40, 60)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4_king_tower_intact"]
+atlas = ExtResource("1_sheet")
+region = Rect2(160, 0, 40, 60)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5_king_tower_damaged"]
+atlas = ExtResource("1_sheet")
+region = Rect2(200, 0, 40, 60)
+
+[resource]
+animations = [
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_0_player_tower_intact")}],
+"loop": false,
+"name": &"player_tower_intact",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_1_player_tower_damaged")}],
+"loop": false,
+"name": &"player_tower_damaged",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_2_enemy_tower_intact")}],
+"loop": false,
+"name": &"enemy_tower_intact",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_3_enemy_tower_damaged")}],
+"loop": false,
+"name": &"enemy_tower_damaged",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_4_king_tower_intact")}],
+"loop": false,
+"name": &"king_tower_intact",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": SubResource("AtlasTexture_5_king_tower_damaged")}],
+"loop": false,
+"name": &"king_tower_damaged",
+"speed": 8.0
+}
+]
