@@ -100,9 +100,10 @@ def export(repo):
            "- [x] 13 帧轮廓比例一致（idle→death 不缩水）",
            "- [x] 透明背景 PNG-32，帧间距 0px（≤2px）",
            "- [x] 命名规范 `<unit>_<state>_<index>.png` + 帧表",
-           "- [ ] Godot 4.6 导入测试通过 —— **待 Nagi 实跑确认**",
+           "- [x] Godot 4.6 导入测试通过 —— Nagi 实测 **18/18 全过**（4.6.stable.official.89cea1439：SpriteFrames 4 段动画 / region 映射 / AnimatedSprite2D 播放 / flip_h / hframes=13 / Nearest 采样）",
            "- [x] 声明「非 AI 生成」（确定性代码绘制）→ 商店审核披露最简",
            "- [x] 源文件：生成器 `tools/marine_sprite_generator.py`（可改色/改姿势重跑）",
+           "- [x] **三处导出像素一致**（单帧 == strip 格 == grid 格）由 `verify_exports()` 硬校验，不再依赖肉眼（`36a0d28` 曾因 `outline()` 非幂等而不一致，已由 `e6517de` 修复）",
            "", "## 重生成\n", "```bash", "python3 tools/marine_sprite_generator.py", "```"]
     with open(os.path.join(out_dir, "marine_frames.md"), "w") as f:
         f.write("\n".join(md) + "\n")
@@ -116,7 +117,36 @@ def export(repo):
     gen_dst = os.path.join(tools_dir, "marine_sprite_generator.py")
     if os.path.realpath(__file__) != os.path.realpath(gen_dst):
         shutil.copy2(__file__, gen_dst)
+    verify_exports(out_dir)
     return out_dir
+
+
+def verify_exports(out_dir):
+    """Hard gate: every frame must be pixel-identical across
+    single PNG / horizontal-strip cell / 4x4-grid cell, alpha in {0,255},
+    <=16 colours, and nothing may overflow its 32x32 cell.
+
+    Added after the 36a0d28 acceptance bug (outline() was not idempotent, so
+    the three exports of one frame drifted apart). Keep this gate green.
+    """
+    meta = json.load(open(os.path.join(out_dir, "marine_frames.json")))
+    strip = Image.open(os.path.join(out_dir, "marine_sheet_strip13.png")).convert("RGBA")
+    grid = Image.open(os.path.join(out_dir, "marine_sheet_grid4x4.png")).convert("RGBA")
+    assert strip.size == (CELL * 13, CELL), strip.size
+    assert grid.size == (CELL * 4 + 3, CELL * 4 + 3), grid.size
+    for fr in meta["frames"]:
+        i = fr["index"]
+        single = Image.open(os.path.join(out_dir, fr["name"] + ".png")).convert("RGBA")
+        strip_cell = strip.crop((i * CELL, 0, (i + 1) * CELL, CELL))
+        c, r = i % 4, i // 4
+        grid_cell = grid.crop((c * (CELL + 1), r * (CELL + 1),
+                               c * (CELL + 1) + CELL, r * (CELL + 1) + CELL))
+        assert single.tobytes() == strip_cell.tobytes(), f"{fr['name']}: strip mismatch"
+        assert single.tobytes() == grid_cell.tobytes(), f"{fr['name']}: grid mismatch"
+        px = list(single.getdata())
+        assert {p[3] for p in px} == {0, 255}, f"{fr['name']}: soft alpha"
+        assert len({p for p in px if p[3] == 255}) <= 16, f"{fr['name']}: >16 colours"
+    return len(meta["frames"])
 
 
 def main():

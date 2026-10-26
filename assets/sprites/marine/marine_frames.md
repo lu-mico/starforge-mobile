@@ -43,9 +43,10 @@
 - [x] 13 帧轮廓比例一致（idle→death 不缩水）
 - [x] 透明背景 PNG-32，帧间距 0px（≤2px）
 - [x] 命名规范 `<unit>_<state>_<index>.png` + 帧表
-- [ ] Godot 4.6 导入测试通过 —— **待 Nagi 实跑确认**
+- [x] Godot 4.6 导入测试通过 —— Nagi 实测 **18/18 全过**（4.6.stable.official.89cea1439：SpriteFrames 4 段动画 / region 映射 / AnimatedSprite2D 播放 / flip_h / hframes=13 / Nearest 采样）
 - [x] 声明「非 AI 生成」（确定性代码绘制）→ 商店审核披露最简
 - [x] 源文件：生成器 `tools/marine_sprite_generator.py`（可改色/改姿势重跑）
+- [x] **三处导出像素一致**（单帧 == strip 格 == grid 格）由 `verify_exports()` 硬校验，不再依赖肉眼（`36a0d28` 曾因 `outline()` 非幂等而不一致，已由 `e6517de` 修复）
 
 ## 重生成
 
