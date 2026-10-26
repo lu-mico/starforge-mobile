@@ -161,16 +161,22 @@ Marine 3 / Hellion 4，且只有 KEY_1/KEY_2）。角标要显示的就是这 4 
 
 | 文件 | 时长 | 规格 |
 |---|---|---|
-| `sfx_deploy.ogg` | ≤0.6s | 谁osh —— 落场，短促下扫 + 落点冲击 |
-| `sfx_hit.ogg` | ≤0.4s | 命中 thud —— 低频冲击，短衰减 |
-| `sfx_death.ogg` | ≤0.8s | 死亡 zap —— 噪声 + 下滑音 |
-| `sfx_mineral.ogg` | ≤0.5s | 采矿 +1 —— **清脆上行**，混战里要听得见 |
-| `sfx_win.ogg` | ≤2.0s | 胜负 sting —— 上行和弦，1.5–2s |
+| `sfx_deploy.wav` | ≤0.6s | 谁osh —— 落场，短促下扫 + 落点冲击 |
+| `sfx_hit.wav` | ≤0.4s | 命中 thud —— 低频冲击，短衰减 |
+| `sfx_death.wav` | ≤0.8s | 死亡 zap —— 噪声 + 下滑音 |
+| `sfx_mineral.wav` | ≤0.5s | 采矿 +1 —— **清脆上行**，混战里要听得见 |
+| `sfx_win.wav` | ≤2.0s | 胜负 sting —— 上行和弦，1.5–2s |
+
+> **交付为 WAV**（brief §2.4 允许 wav/ogg）：本机 ffmpeg 无 libvorbis、homebrew 的 libvorbis 状态损坏（装了但没有二进制），
+> 所以这轮先交 WAV；生成器 `tools/sfx_generator.py --ogg` 走 oggenc，**修好 `brew reinstall libvorbis` 后一条命令即可转 Ogg**。
+> 导入用 `compress/mode=0`（未压缩 PCM，共约 500KB，引擎侧才能直接量峰值）；要省内存可改 QOA。
 
 技术：Ogg Vorbis｜44100Hz 单声道（sting 可双声道）｜峰值 **−6 dBFS**（音效会重叠，防削波）｜
 无直流偏移｜结尾 **≤30ms 淡出**（防爆音）｜走 `AudioStreamPlayer`（非 bus），引擎侧统一 `volume_db`。
 
 **程序合成路线 Mico 已认领**（零成本、可商用）—— 同意，走这条。约束同上（≤2s、-6dBFS、淡出）。
+✅ **已交付 5 条**（`tools/sfx_generator.py` 程序合成，零成本无授权风险），引擎侧验收 `tools/accept_sfx.gd` **全绿**：
+44100Hz / 单声道（sting 双声道）/ 时长合规 / 峰值 −6.00 dBFS / 结尾 30ms 淡出到 0（无爆音）/ 无直流偏移。
 
 ---
 

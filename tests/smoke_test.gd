@@ -1,6 +1,9 @@
 extends Node
 ## v0.1 skeleton smoke test — headless functional check.
-## Run: godot --headless --quit-after 600 res://tests/smoke_test.tscn
+## Run: godot --headless --quit-after 6000 res://tests/smoke_test.tscn
+## (6000, not 600: at 600 the run is cut off before the combat segment
+##  prints its result line, which reads like a failure. Verified on a
+##  pristine worktree: both trees print 14/14 with --quit-after 6000.)
 ##
 ## Checks the four things that actually exist in the skeleton:
 ##   1. Mineral economy (start value, max, regen tick)
