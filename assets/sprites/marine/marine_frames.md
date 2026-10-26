@@ -2,8 +2,8 @@
 
 | 项 | 值 |
 |---|---|
-| 单位 | Marine（朝右 +X，左向由引擎 flip_h） |
-| 帧数 | 13 = idle 2 / walk 4 / attack 3 / death 4 |
+| 单元 | marine（朝右 +X，左向由引擎 flip_h） |
+| 帧数 | 13 = idle 2 + walk 4 + attack 3 + death 4 |
 | 单帧画布 | 32×32，透明背景 |
 | 横向 sheet | `marine_sheet_strip13.png`（416×32，无间距，帧 i 的 x = i×32） |
 | 4×4 审阅图 | `marine_sheet_grid4x4.png`（131×131，1px 透明沟） |
@@ -37,16 +37,20 @@
 - 建议用 `SpriteFrames` 分段：idle = 帧 0-1，walk = 2-5，attack = 6-8，death = 9-12。
 - 项目已设 `default_texture_filter = 0`（Nearest），移动端 2x 放大请用整数倍。
 
+## 验收记录
+
+- `36a0d28` 首版交付 → `e6517de` 修 `outline()` 非幂等 + death_3 溢出 + realpath 守卫
+- `e5f1fd3` 加 `verify_exports()` 硬校验（单帧 == strip 格 == grid 格，字节级）
+
 ## 验收对照（brief §3）
 
 - [x] 像素网格对齐，无抗锯齿、无半透明羽化边
-- [x] 13 帧轮廓比例一致（idle→death 不缩水）
+- [x] 各帧轮廓比例一致（idle→death 不缩水）
 - [x] 透明背景 PNG-32，帧间距 0px（≤2px）
 - [x] 命名规范 `<unit>_<state>_<index>.png` + 帧表
+- [x] **三处导出像素一致**（单帧 == strip 格 == grid 格）由 `verify_exports()` 硬校验
 - [x] Godot 4.6 导入测试通过 —— Nagi 实测 **18/18 全过**（4.6.stable.official.89cea1439：SpriteFrames 4 段动画 / region 映射 / AnimatedSprite2D 播放 / flip_h / hframes=13 / Nearest 采样）
 - [x] 声明「非 AI 生成」（确定性代码绘制）→ 商店审核披露最简
-- [x] 源文件：生成器 `tools/marine_sprite_generator.py`（可改色/改姿势重跑）
-- [x] **三处导出像素一致**（单帧 == strip 格 == grid 格）由 `verify_exports()` 硬校验，不再依赖肉眼（`36a0d28` 曾因 `outline()` 非幂等而不一致，已由 `e6517de` 修复）
 
 ## 重生成
 

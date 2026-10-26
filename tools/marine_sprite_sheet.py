@@ -55,9 +55,11 @@ class Ops:
         self.items = []
 
     def rect(self, x0, y0, x1, y1, c):
-        # pixel-inclusive rectangle (x0..x1, y0..y1)
-        self.items.append(('poly', ([(x0 - 0.5, y0 - 0.5), (x1 + 0.5, y0 - 0.5),
-                                     (x1 + 0.5, y1 + 0.5), (x0 - 0.5, y1 + 0.5)], c)))
+        # pixel-inclusive rectangle: lands exactly on pixels x0..x1, y0..y1
+        # (polygon spans the pixel-CENTRE box [x0+0.5, x1+0.5]; the even-odd
+        #  fill test then keeps exactly those pixel centres).
+        self.items.append(('poly', ([(x0, y0), (x1 + 1, y0),
+                                     (x1 + 1, y1 + 1), (x0, y1 + 1)], c)))
 
     def line(self, x0, y0, x1, y1, c, t=2):
         dx, dy = x1 - x0, y1 - y0
@@ -75,6 +77,10 @@ class Ops:
         self.items.append(('poly', (pts, c)))
 
     def px(self, x, y, c):
+        self.rect(x, y, x, y, c)
+
+    def set(self, x, y, c):
+        """Alias of px() so Ops and Grid share one API."""
         self.rect(x, y, x, y, c)
 
     def poly(self, pts, c):
@@ -200,8 +206,9 @@ class Grid:
         return img
 
 
-def render(ops, tf=T_identity()):
-    g = Grid()
+def render(ops, tf=T_identity(), w=CELL, h=CELL):
+    """Rasterise ops into a w x h grid (default 32x32; 48x48 for the tank)."""
+    g = Grid(w, h)
     for kind, data in ops.items:
         if kind == 'poly':
             pts, color = data
@@ -361,13 +368,15 @@ def pose_idle2():
 
 
 def pose_walk(phase):
+    head_dy = 0
     if phase == 1:      # contact — front leg forward, back leg trailing
         dy = 0
         front, back = ((14, 18), (16, 23), (17, 28)), ((11, 18), (10, 23), (8, 28))
         af, ab = ((17, 11), (19, 14), (20, 16)), ((11, 12), (14, 15), (18, 16))
         rp = (20, 15)
-    elif phase == 2:    # passing — legs together, body rises
+    elif phase == 2:    # passing — legs together, body rises (head stays level)
         dy = -1
+        head_dy = 1
         front, back = ((14, 17), (13, 22), (12, 27)), ((11, 17), (12, 22), (13, 27))
         af, ab = ((17, 10), (20, 13), (21, 15)), ((11, 11), (13, 14), (17, 15))
         rp = (21, 14)
@@ -376,13 +385,15 @@ def pose_walk(phase):
         front, back = ((14, 18), (12, 23), (11, 28)), ((11, 18), (12, 23), (14, 28))
         af, ab = ((17, 11), (19, 14), (20, 16)), ((11, 12), (14, 15), (18, 16))
         rp = (20, 15)
-    else:              # passing — legs together, body rises
+    else:              # passing — legs together, body rises (head stays level)
         dy = -1
+        head_dy = 1
         front, back = ((14, 17), (15, 22), (16, 27)), ((11, 17), (10, 22), (9, 27))
         af, ab = ((17, 10), (19, 13), (20, 15)), ((11, 11), (13, 14), (17, 15))
         rp = (20, 14)
-    return render(make_ops(body_dy=dy, leg_back=back, leg_front=front,
-                           arm_back=ab, arm_front=af, rifle_pos=rp))
+    return render(make_ops(body_dy=dy, head_dy=head_dy, leg_back=back,
+                           leg_front=front, arm_back=ab, arm_front=af,
+                           rifle_pos=rp))
 
 
 def pose_attack1():
