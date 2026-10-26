@@ -1,4 +1,5 @@
 # Batch 1 — 候选供应商清单（2026-10-26 摸底）
+> **Status:** ⛔ Superseded by `docs/ASSET_API_PIPELINE.md` (2026-10-26: outsource = API). Vendor list unused; price anchors kept as cost reference.
 
 > 配套文件：`docs/ASSET_RFQ_BATCH1.md`（询价帖正文）· 需求源头 `docs/ASSET_OUTSOURCING_BRIEF.md`
 > 目标：10/29 拿到 ≥3 份报价 → 11/05 试片 → 11/12 全交 → 11/15 v0.1

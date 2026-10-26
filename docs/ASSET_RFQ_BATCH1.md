@@ -1,6 +1,5 @@
 # Pixel Art Outsourcing — Request for Quotes (Batch 1)
-
-> **Status:** DRAFT — not yet sent. Needs a send channel + Luminary's go on budget ceiling before outreach goes out.
+> **Status:** ⛔ SUPERSEDED by `docs/ASSET_API_PIPELINE.md` (Luminary 2026-10-26: outsource = API, not human vendor, not local). Do not send.
 > **Owner:** Mico (sourcing + acceptance) · Nagi (technical spec + engine import)
 > **Source spec:** `docs/ASSET_OUTSOURCING_BRIEF.md` §2–§4
 > **Deadline target:** quotes in by **2026-10-29** → sample piece by **11-05** → full delivery by **11-12** → v0.1 by **11-15**
