@@ -122,3 +122,38 @@ func _acquire_target() -> void:
 		if d < best_dist:
 			best_dist = d
 			_target = u
+	# No enemy troop in reach -> shoot the opposing tower (ASSET_UI_SPEC §6-3).
+	# Without this path the tower's damaged art could never appear, because
+	# nothing else in v0.1 deals damage to a tower.
+	if _target == null:
+		_target = _acquire_tower_target()
+
+
+## The enemy tower this unit should walk up to and shoot, if any.
+## Towers ahead of the unit win over towers behind it.
+func _acquire_tower_target() -> Node2D:
+	var best: Node2D = null
+	var best_dist: float = INF
+	var best_ahead: bool = false
+	for node in get_tree().get_nodes_in_group("towers"):
+		var t := node as Node2D
+		if t == null or t == self:
+			continue
+		if int(t.get("team")) == team:
+			continue
+		if bool(t.call("is_destroyed")):
+			continue
+		# Same lane check (the tower's ground line vs ours)
+		if absf(t.global_position.y - global_position.y) > 4.0:
+			continue
+		var dx: float = t.global_position.x - global_position.x
+		var ahead: bool = (dx >= 0.0) == (_facing >= 0)
+		var d: float = absf(dx)
+		if ahead and not best_ahead:
+			best = t
+			best_dist = d
+			best_ahead = true
+		elif ahead == best_ahead and d < best_dist:
+			best = t
+			best_dist = d
+	return best

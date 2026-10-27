@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://b1starforge_main"]
+[gd_scene load_steps=9 format=3 uid="uid://b1starforge_main"]
 
 [ext_resource type="Script" path="res://src/core/Arena.gd" id="1_arena"]
 [ext_resource type="Script" path="res://src/core/UnitSpawner.gd" id="2_spawner"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/background/battlefield_720x1280.png" id="4_bg"]
 [ext_resource type="Script" path="res://src/ui/CardBar.gd" id="5_cardbar"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/icon_mineral_32.png" id="6_mineral"]
+[ext_resource type="Script" path="res://src/buildings/Tower.gd" id="7_towerscript"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dummy"]
 size = Vector2(40, 60)
@@ -24,6 +25,10 @@ stretch_mode = 6
 
 [node name="EnemyTower" type="StaticBody2D" parent="."]
 position = Vector2(620, 640)
+script = ExtResource("7_towerscript")
+tower_kind = "enemy"
+team = 1
+max_hp = 200
 
 [node name="TowerSprite" type="Sprite2D" parent="EnemyTower"]
 texture_filter = 1
