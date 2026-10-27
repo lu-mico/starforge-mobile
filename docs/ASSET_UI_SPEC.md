@@ -1,7 +1,8 @@
 # Starforge Mobile — 美术规格：塔楼 / UI / 背景 / SFX
 
 > **Owner:** Nagi（技术规格 + 引擎导入）｜Mico（制作 + 验收）
-> **Status:** 塔楼已交付并验收（`59be7cd`）；本文含塔楼实测数据 + UI/背景/SFX 定版
+> **Status:** 塔楼（`59be7cd`）、UI+背景（`551bfde`→`0844158`）已交付并验收；SFX 已交付（`3cfe546`）；
+> 引擎侧接线已落地（背景 TextureRect + 卡牌栏 + 点选部署）。§6 三项已拍板。
 > **上游:** `docs/ASSET_OUTSOURCING_BRIEF.md` §2.2–§2.4（画布尺寸/数量）+ §3（DoD）
 > **相关:** `docs/STARFORGE_GDD.md` §4（塔/车道）、§5（卡牌）、§3（矿）
 
@@ -53,11 +54,11 @@
 后果量化：塔在 720px 宽视口里只有 40px 宽（**屏宽 5.6%**），受击痕迹约 8×9px（**屏宽 ~1%**）。
 1x 显示时改色型受击态**接近不可辨**。
 
-→ 建议（v0.1 不阻塞，v0.2 迭代）：
-- **优先**：引擎侧加受击反馈（HP<50% 切 damaged 贴图 + 轻微屏幕抖动/闪白），
-  不指望 1px 级的贴图差异承担全部信息量
-- **次选**：受击态去掉 ≥3px 深的一块轮廓角（我 19:12 版式里写过这条），
-  但会改塔的剪影，需重出 2 张
+→ **已拍板（§6-3）：塔楼受击只做 2 态（intact / damaged），不改剪影。**
+可辨性靠**引擎侧受击反馈**补：HP<50% 切 damaged 贴图 + 轻微屏幕抖动/闪白，
+不指望 1px 级的贴图差异承担全部信息量。
+次选方案（受击态去掉 ≥3px 深的一块轮廓角，需重出 2 张）**不做** —— 会改塔的剪影，
+而塔在 v0.1 场景里只有 40px 宽，剪影变化比改色更值得留到 3 车道时统一处理。
 
 **(b) 王塔蓝色顶晶，但王塔是「双方共用」的同一张图**
 brief §2.2 = 6 张 = 玩家塔/敌方塔/**王塔** × 2 状态 ⇒ 王塔只有一张设计，
@@ -69,10 +70,12 @@ brief §2.2 = 6 张 = 玩家塔/敌方塔/**王塔** × 2 状态 ⇒ 王塔只�
 2. 王塔出 2 个阵营版本（总数 6 → 8 张，超 brief 的 6）
 3. 引擎侧用 `modulate` 给敌方王塔换色（会染到整张图，不推荐）
 
-**建议 1**（中性顶晶）。v0.1 单线 MVP 场景里根本没有王塔（`main.tscn` 只有 `EnemyTower`），
-所以这条可以推到 3 车道时再定 —— 但**别忘了**，加 3 车道时会同时撞上这条。
+**✅ 已拍板并落地（§6-1）＝选项 1（中性银白）**：`tools/tower_sprite_sheet.py` 的
+`ACCENT["king"]` 由 `("B","L","R")`（蓝）改为 `("T","R","X")`（中性银白 + 白高光）。
+重出 2 张王塔贴图后实测：**7 色、无阵营蓝**（旧版 3 个蓝系色），
+`accept_static_sprites.gd` 对塔楼清单全 PASS。阵营靠位置 + 周边侧塔色区分。
 
-### 1.3 塔楼交付格式小缺口
+### 1.3 塔楼交付格式小缺口 — ✅ 已补（`375ad0a` 加 `towers_frames.md`）
 单位批次每个都有 `<unit>_frames.md`（人读帧表 + 验收对照表），**塔楼只有 `towers_frames.json`**。
 建议补一份 `towers_frames.md`（含「Godot 4.6 导入测试通过」勾选 + 上面 §1.1 的几何表），
 与单位批次保持同一交付口径。
@@ -81,15 +84,20 @@ brief §2.2 = 6 张 = 玩家塔/敌方塔/**王塔** × 2 状态 ⇒ 王塔只�
 
 ## 2. 引擎侧对位表（我方落地用，单位素材已具备但场景还没接）
 
-> 引擎当前仍是 ColorRect 占位（`scenes/units/marine.tscn`、`hellion.tscn`、
-> `main.tscn` 的 Background/Lane/TowerSprite 全是 ColorRect）。单位/塔贴图都已到位，
-> 下一步是把它们接进场景 —— 接线时**必须**按下表对齐，否则单位脚底会错位。
+> **✅ 引擎侧已接线**（单位/塔贴图已进场景）。接线时**必须**按下表对齐，否则单位脚底会错位。
 
 **脚底对齐公式**（`Sprite2D` / `AnimatedSprite2D` centered=true）
 ```
 offset_y = H/2 - g - 1        H = 画布高, g = idle 帧最底一行(ground row)
 ```
-目标：所有单位/塔的**脚底**落在同一条线 `lane_y = 360`（`Unit._physics_process` 锁定 position.y = lane_y）。
+目标：所有单位/塔的**脚底**落在同一条线 **`lane_y = 640`**
+（`Unit._physics_process` 锁定 position.y = lane_y）。
+
+> **为什么是 640 不是 360**：lane_y 是竖屏 720×1280 的**垂直中线**，不是随手取的数。
+> §4 要求战斗区落在中央纵向 40%（rows 384..896）—— 车道在 340..380 时它挤在顶部四分之一，
+> 中央那条带是空地；挪到 **620..659** 后战斗区正好就是中央那条带，
+> 且整张背景能做成**上下精确镜像**（row y == row 1279-y，0 像素差）。
+> 背景与引擎必须同步改，**引擎才是位置的权威**（Mico 09:45 那版按 360 做的已作废）。
 
 | 素材 | 画布 H | idle ground row g | **offset_y** | 说明 |
 |---|---|---|---|---|
@@ -100,7 +108,8 @@ offset_y = H/2 - g - 1        H = 画布高, g = idle 帧最底一行(ground row
 | tower（侧/王） | 60 | 59 | **-30** | 基线在画布底边 |
 
 ⚠️ **最易错的一条**：`siege_tank` 是 48×48，跟 32×32 走同一套居中逻辑的话脚底会低 8px。
-⚠️ **lane 带是 y=340..380**（`main.tscn` 的 Lane ColorRect），塔底若压到 380 以下会出带外。
+⚠️ **lane 带是 y=620..660**（背景地面线 638..641 压 `lane_y=640`），塔底若压到 660 以下会出带外。
+⚠️ `main.tscn` 的 `Lane` ColorRect 是**调试占位**，正式背景贴图自带车道，**不要再叠一层**。
 
 **单位 SpriteFrames 建议**：直接用 `AnimatedSprite2D` + 由 `<unit>_frames.json` 生成的
 `.tres`（4 段动画 idle/walk/attack/death，帧数 2/4/3/4）。转换里已知要点：
@@ -109,7 +118,7 @@ Godot 4 的 `SpriteFrames.add_frame()` **不接受 Rect2 region**，必须包 `A
 
 ---
 
-## 3. UI / 卡牌（8 项 → 建议 10 项）
+## 3. UI / 卡牌（✅ 10 项，已交付）
 
 ### 3.1 卡牌图标（4 张，64×64）
 `icon_marine.png` / `icon_marauder.png` / `icon_hellion.png` / `icon_siege_tank.png`
@@ -202,3 +211,29 @@ B1 塔楼（✅ 已交付）→ B2 卡牌图标4+卡框1（框与图标必须同
 ---
 
 *最后更新：2026-10-26 19:4x JST by Nagi*
+
+
+---
+
+## 8. 引擎侧接线（✅ 已落地）
+
+**背景**：`main.tscn` 的 `Background` = `TextureRect`，720×1280，
+`stretch_mode = STRETCH_KEEP_ASPECT_COVERED`、`texture_filter = NEAREST`。
+原 `Lane` ColorRect 已删（背景自带车道，叠两层会打架）。
+
+**卡牌栏**（`src/ui/CardBar.gd` + `src/ui/UnitCard.gd`）：
+- 4 张卡 = `UnitRoster.CARDS`（**费用/场景/图标唯一真源**，`UnitSpawner` 与卡牌栏共用）
+- 卡面 = 九宫格 `NinePatchRect`（patch_margin 四边 10）+ 64×64 图标（**按 body bbox 居中**，
+  不按画布居中 —— 图标留白不对称，按画布居中会歪）+ 3 张角标
+- 卡框画在 80×64 源空间再整体 2x 上屏（**最近邻，不重采样**）
+- 角标上**没有数字**，费用数字由引擎画（`Label` 叠在角标上），否则只有一张脸没有费用信息
+- 卡栏底边贴屏底，4 张 160×128 + 16px 间距 = 688px，720 宽居中
+
+**部署**：点卡选中（`card_badge_frame` 亮起作选中角标）→ 点车道该 x 处生成。
+`UnitSpawner` 把单位挂在**自己父节点（arena）**，不是 `get_tree().current_scene`
+（后者在 `--script` 驱动时为 null，且 arena 才是正确的宿主）。
+键盘 1–4 仍可在固定出生点生成。
+
+**验收脚本自指**：headless 下 root 视口只有 64×64，content-scale 会把输入坐标全部扭曲，
+所以 `accept_ui.gd` 先 `content_scale_mode = DISABLED` + `root.size = 720×1280`，
+让画布变换成为单位阵（与真机一致），GUI 命中测试与 `_unhandled_input` 才落在正确位置。
