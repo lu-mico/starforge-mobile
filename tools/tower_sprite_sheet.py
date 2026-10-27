@@ -16,10 +16,15 @@ from marine_sprite_sheet import (Ops, Grid, T_identity, T_rot, T_shift, T_chain,
 W, H = 40, 60
 
 # accent colours per side: player = blue, enemy = orange, king = blue + gold-ish rim
+# ASSET_UI_SPEC §6 decision 1: the king tower is a SHARED sprite (both sides
+# use it), so its accent must not read as a faction colour. Neutral
+# silver-white instead of player blue: T gunmetal-light body/core,
+# R rim-light crystal, X white glint. Faction is read from position + the
+# surrounding side towers, not from the king.
 ACCENT = {
     "player": ("B", "L", "H"),
     "enemy": ("V", "W", "F"),
-    "king": ("B", "L", "R"),
+    "king": ("T", "R", "X"),
 }
 
 
