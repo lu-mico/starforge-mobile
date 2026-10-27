@@ -281,10 +281,16 @@ def check_background(img):
                 bad += 1
     if bad:
         problems.append(f"{bad} 2x2 blocks are not on the pixel grid")
+    # the engine's lane band must be lane surface, with the ground line on lane_y
+    for y in (LANE_TOP, LANE_BOT):
+        if px[360, y][:3] != LANE_SURFACE:
+            problems.append(f"lane surface missing at y={y}")
+    if px[360, LANE_GROUND_Y][:3] != LANE_GROUND:
+        problems.append(f"ground line is not on lane_y={LANE_GROUND_Y}")
     # central 40% must not carry high-contrast terrain texture
-    # the lane band (340..380) is the battle area and belongs there; the clean
-    # rule applies to the terrain above and below it
-    field = {px[x, y][:3] for y in list(range(0, 336, 9)) + list(range(384, h, 9))
+    # the lane band is the battle area and belongs there; the clean rule
+    # applies to the terrain above and below it
+    field = {px[x, y][:3] for y in list(range(0, LANE_TOP - 4, 9)) + list(range(LANE_BOT + 5, h, 9))
              for x in range(144, 576, 9)}
     if field - {(107, 114, 128), (11, 13, 26)}:
         problems.append(f"central 40% carries texture: {field}")
@@ -310,13 +316,23 @@ def check_icons(images):
     return problems, heights
 
 
+# engine-pinned lane geometry (must match tools/background_sprite_sheet.py
+# and the engine's main.tscn lane_y)
+LANE_TOP, LANE_BOT = 620, 659
+LANE_GROUND_Y = 640
+LANE_SURFACE = (170, 179, 194)
+LANE_GROUND = (16, 24, 32)
+
+
 # ---------------------------------------------------------------- gate 4: mirror
 
-LANE_ROWS = set(range(300, 420))   # engine-pinned lane band + tower-base clearings
-
-
 def check_background_mirror(img):
-    """EXACT vertical mirror: row y must equal row h-1-y for every pixel."""
+    """EXACT vertical mirror: row y must equal row h-1-y for EVERY pixel.
+
+    No exclusions. The lane band, the ground line, the tower pads and the
+    approach marks are all self-mirroring pairs about the image centre, so
+    the whole 720x1280 image satisfies this with 0 differing pixels.
+    """
     problems = []
     w, h = img.size
     px = img.load()
@@ -324,8 +340,6 @@ def check_background_mirror(img):
     first = None
     for y in range(h // 2):
         my = h - 1 - y
-        if y in LANE_ROWS or my in LANE_ROWS:
-            continue          # engine-pinned lane band + tower-base clearings
         for x in range(w):
             if px[x, y] != px[x, my]:
                 diff += 1
