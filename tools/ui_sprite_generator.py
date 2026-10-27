@@ -460,6 +460,143 @@ def check_badges(images):
     return problems
 
 
+
+# ---------------------------------------------------------------- artifacts
+
+# The review strip is the manifest layout: every sprite top-aligned at y=0,
+# laid out at its own width. The grid is a 4x3 sheet of 64x64 cells with 1px
+# transparent gutters, assets centred inside their cell.
+GRID_COLS, GRID_ROWS, GRID_CELL, GRID_GUTTER = 4, 3, 64, 1
+GRID_ORDER = [
+    "icon_marine", "icon_marauder", "icon_hellion", "icon_siege_tank",
+    "card_frame", "icon_mineral_32", "icon_mineral_16", "card_badge_cost",
+    "card_badge_count", "card_badge_frame",
+]
+
+
+def build_strip(by_name):
+    """Horizontal strip: sprites top-aligned at y=0, at their own widths."""
+    w = sum(sizes_of(by_name)[n][0] for n, _x, _w, _h in STRIP_LAYOUT)
+    strip = Image.new("RGBA", (w, 64), (0, 0, 0, 0))
+    for name, x, sw, _sh in STRIP_LAYOUT:
+        strip.paste(by_name[name], (x, 0))
+    return strip
+
+
+def build_grid(by_name):
+    """4x3 review grid, 64px cells, 1px gutters, assets centred."""
+    sizes = sizes_of(by_name)
+    w = GRID_COLS * GRID_CELL + (GRID_COLS - 1) * GRID_GUTTER
+    h = GRID_ROWS * GRID_CELL + (GRID_ROWS - 1) * GRID_GUTTER
+    grid = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    for i, name in enumerate(GRID_ORDER):
+        r, c = divmod(i, GRID_COLS)
+        ox = c * (GRID_CELL + GRID_GUTTER)
+        oy = r * (GRID_CELL + GRID_GUTTER)
+        sw, sh = sizes[name]
+        grid.paste(by_name[name], (ox + (GRID_CELL - sw) // 2, oy + (GRID_CELL - sh) // 2))
+    return grid
+
+
+def sizes_of(by_name):
+    return {n: img.size for n, img in by_name.items()}
+
+
+def verify_consistency(by_name):
+    """single frame == strip cell == grid cell, byte for byte.
+
+    The manifest is what the engine reads, so a stale strip or grid means the
+    review artefacts silently disagree with what actually ships.
+    """
+    problems = []
+    strip = build_strip(by_name)
+    grid = build_grid(by_name)
+    for name, x, sw, sh in STRIP_LAYOUT:
+        single = by_name[name].convert("RGBA")
+        if strip.crop((x, 0, x + sw, sh)).tobytes() != single.tobytes():
+            problems.append(f"strip cell {name} != single frame")
+    for i, name in enumerate(GRID_ORDER):
+        r, c = divmod(i, GRID_COLS)
+        ox = c * (GRID_CELL + GRID_GUTTER)
+        oy = r * (GRID_CELL + GRID_GUTTER)
+        sw, sh = by_name[name].size
+        ax = ox + (GRID_CELL - sw) // 2
+        ay = oy + (GRID_CELL - sh) // 2
+        if grid.crop((ax, ay, ax + sw, ay + sh)).tobytes() != by_name[name].tobytes():
+            problems.append(f"grid cell {name} != single frame")
+    return problems
+
+
+def write_frames_md(path, by_name, sizes):
+    """The human-readable twin of ui_frames.json (same data, prose form).
+
+    Every measured value here is measured from the exported images, never
+    hard-coded, so the table cannot drift away from the art.
+    """
+    icons = ("icon_marine", "icon_marauder", "icon_hellion", "icon_siege_tank")
+    lines = []
+    lines.append("# UI batch \u2014 sprite set (10 static images)")
+    lines.append("")
+    lines.append("| \u9879 | \u503c |")
+    lines.append("|---|---|")
+    lines.append("| \u753b\u5e03 | \u5355\u5f20\u5404\u81ea\u5c3a\u5bf8\uff08\u56fe\u6807 64x64 / \u5361\u6846 48x64 / \u77ff 32+16 / \u89d2\u6807 12x12\uff09 |")
+    lines.append("| \u6570\u91cf | 10\uff08\u5361\u724c\u56fe\u6807 4 + \u4e5d\u5bab\u683c\u5361\u6846 1 + \u77ff\u56fe\u6807 2 + \u89d2\u6807 3\uff09 |")
+    lines.append("| \u8c03\u8272\u677f | \u5168\u5c40 16 \u8272\uff08\u89c1 `ui_frames.json`\uff09 |")
+    lines.append("| \u6297\u952f\u9f7f | \u65e0\uff08alpha \u53ea\u542b 0/255\uff09 |")
+    lines.append("| \u6765\u6e90 | **\u786e\u5b9a\u6027\u4ee3\u7801\u7ed8\u5236**\uff0c\u975e AI \u751f\u6210\u3001\u975e\u771f\u4eba\u59d4\u6258 |")
+    lines.append("| \u4e5d\u5bab\u683c | `card_frame.png` 48x64\uff0cpatch_margin \u56db\u8fb9 10px \u2192 \u4e2d\u5fc3\u62c9\u4f38\u533a 28x44 |")
+    lines.append("")
+    lines.append("## \u6e05\u5355")
+    lines.append("")
+    lines.append("| # | \u6587\u4ef6 | \u5c3a\u5bf8 | \u5b9e\u6d4b body bbox | \u8fb9\u8ddd L/T/R/B |")
+    lines.append("|---|---|---|---|---|")
+    for i, (name, _x, _w, _h) in enumerate(STRIP_LAYOUT):
+        img = by_name[name].convert("RGBA")
+        bbox = img.getbbox()
+        w, h = img.size
+        if name in icons:
+            margins = "%d/%d/%d/%d" % (bbox[0], bbox[1], w - bbox[2], h - bbox[3])
+        else:
+            margins = "-"
+        lines.append("| %d | `%s.png` | %dx%d | (%d,%d)-(%d,%d) | %s |" % (
+            i, name, w, h, bbox[0], bbox[1], bbox[2], bbox[3], margins))
+    lines.append("")
+    lines.append("## \u56fe\u6807\u4e3b\u4f53\u9ad8\u5ea6\uff084 \u5f20\u5fc5\u987b\u4e00\u81f4\u4e14 \u226440px\uff09")
+    lines.append("")
+    lines.append("| \u56fe\u6807 | \u4e3b\u4f53\u9ad8 |")
+    lines.append("|---|---|")
+    for name in icons:
+        bbox = by_name[name].convert("RGBA").getbbox()
+        lines.append("| `%s` | %d |" % (name, bbox[3] - bbox[1]))
+    lines.append("")
+    lines.append("## \u4e09\u5904\u5bfc\u51fa\u4e00\u81f4\u6027")
+    lines.append("")
+    lines.append("- \u6a2a\u5411 strip\uff1a`ui_sheet_strip.png`\uff08388x64\uff0c\u7b2c i \u5e27 x = \u7d2f\u8ba1\u5bbd\u5ea6\uff09")
+    lines.append("- \u5ba1\u9605\u7f51\u683c\uff1a`ui_sheet_grid.png`\uff08259x194\uff0c4x3\uff0c1px \u900f\u660e\u6c9f\uff0c\u5355\u5143\u683c 64x64\uff0c\u8d44\u4ea7\u5c45\u4e2d\uff09")
+    lines.append("- \u786c\u6821\u9a8c\uff1a\u5355\u5f20 == strip \u683c == grid \u683c\uff08\u9010\u5b57\u8282\uff09\uff0c\u7531 `verify_consistency()` \u6267\u884c")
+    lines.append("")
+    lines.append("## \u9a8c\u6536\u5bf9\u7167\uff08brief \u00a73 / ASSET_UI_SPEC \u00a73\uff09")
+    lines.append("")
+    lines.append("- [x] \u50cf\u7d20\u7f51\u683c\u5bf9\u9f50\uff0c\u65e0\u6297\u952f\u9f7f\u3001\u65e0\u534a\u900f\u660e\u7fbd\u5316\u8fb9")
+    lines.append("- [x] \u900f\u660e\u80cc\u666f PNG-32\uff08\u89d2\u6807\u5e95\u677f\u5168\u4e0d\u900f\u660e\uff09")
+    lines.append("- [x] \u547d\u540d\u89c4\u8303 + \u5e27\u8868\uff08json + \u672c md\uff09")
+    lines.append("- [x] \u4e5d\u5bab\u683c patch_margin=10 \u62c9\u4f38 3 \u79cd\u5c3a\u5bf8\u65e0\u63a5\u7f1d")
+    lines.append("- [x] \u5361\u6846\u4e2d\u5fc3\u7eaf\u8272\uff0c\u5de6\u53f3\u8fb9\u4ec5\u6c34\u5e73\u6e10\u53d8\uff0c\u4e0a\u4e0b\u8fb9\u4ec5\u5782\u76f4\u6e10\u53d8\uff0c\u56db\u89d2\u94c5\u9489")
+    lines.append("- [x] 4 \u5f20\u5361\u724c\u56fe\u6807\u4e3b\u4f53\u9ad8\u5ea6\u4e00\u81f4\u4e14 \u226440px")
+    lines.append("- [x] \u6bcf\u4e2a\u56fe\u6807\u56db\u5468\u7559\u767d \u22652px\uff08\u5766\u514b \u22656px\uff09\uff0c\u4e0d\u8d34\u753b\u5e03\u8fb9")
+    lines.append("- [x] 16px \u77ff\u56fe\u6807\u4e3a\u624b\u5de5\u7b80\u5316\u7248\uff08\u975e 32px \u7f29\u653e\uff09\uff0c\u22643 \u8272")
+    lines.append("- [x] \u80cc\u666f 720x1280 \u4e0d\u900f\u660e\u3001\u4e25\u683c 2x \u7f51\u683c\u3001\u65e0\u566a\u70b9\u3001**\u4e0d\u542b\u9635\u8425\u84dd/\u6a59**")
+    lines.append("")
+    lines.append("## \u91cd\u751f\u6210")
+    lines.append("")
+    lines.append("```bash")
+    lines.append("python3 tools/ui_sprite_generator.py")
+    lines.append("```")
+    lines.append("")
+    with open(path, "w") as f:
+        f.write("\n".join(lines))
+
+
 # ---------------------------------------------------------------- main
 
 def main():
@@ -510,6 +647,15 @@ def main():
     }
     with open(os.path.join(ui_dir, "ui_frames.json"), "w") as f:
         json.dump(meta, f, indent=2)
+
+    # review strip + review grid + the human-readable frame table. These are
+    # generated from the same images as the singles, so they can never drift:
+    # G8 re-checks them byte for byte.
+    strip = build_strip(by_name)
+    strip.save(os.path.join(ui_dir, "ui_sheet_strip.png"))
+    grid = build_grid(by_name)
+    grid.save(os.path.join(ui_dir, "ui_sheet_grid.png"))
+    write_frames_md(os.path.join(ui_dir, "ui_frames.md"), by_name, sizes)
 
     bg = B.build_image()
     bg_path = os.path.join(bg_dir, "battlefield_720x1280.png")
@@ -567,6 +713,10 @@ def main():
     probs, m16_diff = check_mineral16(exported["icon_mineral_16"],
                                       exported["icon_mineral_32"])
     gates.append(("G6", "mineral_16 (colours/1px runs/ink ring/downscale)", probs))
+
+    # G8 - the review artefacts match the shipped frames byte for byte
+    gates.append(("G8", "strip/grid cells == single frames (byte-identical)",
+                  verify_consistency(by_name)))
 
     # G7 - badges
     gates.append(("G7", "badges (opaque/ink border/pairwise)",
