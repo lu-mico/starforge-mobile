@@ -233,7 +233,31 @@ B1 塔楼（✅ 已交付）→ B2 卡牌图标4+卡框1（框与图标必须同
 
 ---
 
-*最后更新：2026-10-27 20:3x JST by Nagi*
+---
+
+## 8. 2026-10-28 复验记录（R30）
+
+补 R29 遗留的**引擎侧复验**（上一轮只改了 manifest 帧位，没跑门禁）：
+
+| 门禁 | 命令 | 结果 |
+|---|---|---|
+| UI 静态贴图（10 项） | `godot --headless --script tools/accept_static_sprites.gd -- res://assets/sprites/ui/ui_frames.json` | **PASS**（10/10 项：尺寸/alpha 二值/≤16 色/.import 齐全） |
+| 像素门禁 G0–G8 | `python3 tools/ui_sprite_generator.py` | **全 PASS**（G0 hygiene … G8 strip/grid 字节一致） |
+| 塔楼受击反馈 | `godot --headless --script tools/accept_tower_feedback.gd` | **PASS**（40 checks, 0 failed） |
+| UI 交互（选卡/点车道/部署） | `godot --headless --script tools/accept_ui.gd` | **PASS**（118 checks, 0 failed） |
+| SFX 5 条 | `godot --headless --script tools/accept_sfx.gd -- res://assets/audio/sfx` | **PASS**（44100Hz/单声道/峰值 ≤−6dBFS/淡出到 0） |
+
+**顺带修的门禁顺序 bug**（`65ccca1`）：G8（strip/grid 字节一致）虽然编号在 G7 之后，
+但代码里跑在 G7 之前，打印顺序和文档对不上。已改成 G7 → G8，并在模块 docstring 里补上 G8 说明。
+
+**真机侧（模拟器）**：用 Medium_Phone_API_36.1 装新导出的 debug APK 并启动，
+战场背景、卡牌栏 4 张卡（带角标位）、王塔贴图均正常渲染，无崩溃。
+APK：`~/Agent-Outputs/Nagi/starforge-mobile/starforge_v0.1.0-alpha.1-debug_2026-10-28.apk`
+（sha256 `49385e618ed1b31129c8ebf3aa95aefb7eb38e33f047ce3380ed45663662206f`）。
+⚠️ 模拟器上手动点选卡 + 点车道，**未能从截图确认单位落地**（点选高亮也不明显）——
+部署链路目前只有 headless 门禁（118 checks）背书，真机视觉确认还欠一次。
+
+*最后更新：2026-10-28 20:20 JST by Nagi*
 
 
 ---
