@@ -98,6 +98,9 @@ func take_damage(amount: int) -> bool:
 		return false
 	_hp = maxi(0, _hp - amount)
 	damaged.emit(self, _hp)
+	# The hit thud. The tower is the biggest target on screen, so its hits
+	# are the loudest combat sound (ASSET_UI_SPEC §5).
+	Sfx.play("hit", -1.0)
 	_flash_left = flash_time
 	_shake_left = shake_time
 	_shake_phase = PI / 2.0
@@ -145,6 +148,9 @@ func _set_damaged(value: bool) -> void:
 
 func _destroy() -> void:
 	_is_destroyed = true
+	# The tower falling is the biggest event in a match - it gets its own
+	# heavy sound, not the unit-sized death zap.
+	Sfx.play("death", 0.0, 0.65)
 	# A dead tower always shows the damaged art, even if it died in one hit
 	# from full hp (the 50% rule would never have been crossed).
 	_set_damaged(true)

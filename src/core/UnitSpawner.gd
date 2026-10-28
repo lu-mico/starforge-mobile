@@ -56,6 +56,9 @@ func _spawn_at(id: String, world_x: float) -> bool:
 	host().add_child(unit)
 	unit.global_position = Vector2(world_x, lane_y)
 	unit.add_to_group("units")
+	# The card whoosh: the most important sound in a deploy game, because it
+	# confirms the tap was understood (ASSET_UI_SPEC §5).
+	Sfx.play("deploy")
 	return true
 
 

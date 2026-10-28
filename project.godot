@@ -23,6 +23,7 @@ window/handheld/orientation="portrait"
 [autoload]
 
 MineralField="*res://src/core/MineralField.gd"
+Sfx="*res://src/audio/SfxBank.gd"
 
 [input]
 

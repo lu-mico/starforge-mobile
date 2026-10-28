@@ -23,6 +23,9 @@ func _process(delta: float) -> void:
 	while _regen_accumulator >= REGEN_INTERVAL and _current < MAX:
 		_regen_accumulator -= REGEN_INTERVAL
 		_current += 1
+		# The +1 must be audible: in a fight the mineral tick is the only
+		# feedback that the economy is alive (ASSET_UI_SPEC §5).
+		Sfx.play("mineral")
 		minerals_changed.emit(_current, MAX)
 
 func current() -> int:
@@ -39,3 +42,12 @@ func spend(cost: int) -> bool:
 	minerals_spent.emit(cost, _current)
 	minerals_changed.emit(_current, MAX)
 	return true
+
+
+## Puts the economy back to its starting state (5 / 10, no pending regen).
+## Used when a match restarts: the autoload outlives the scene, so the
+## previous match's minerals would otherwise carry over.
+func reset() -> void:
+	_current = STARTING
+	_regen_accumulator = 0.0
+	minerals_changed.emit(_current, MAX)

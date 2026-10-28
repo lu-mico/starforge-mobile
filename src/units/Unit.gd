@@ -49,6 +49,10 @@ func _physics_process(delta: float) -> void:
 	if _dying:
 		velocity = Vector2.ZERO
 		return
+	# A destroyed tower stays in the tree (its collision is off), so a cached
+	# target has to be re-checked or the unit keeps shooting a corpse.
+	if _target is Tower and bool((_target as Tower).is_destroyed()):
+		_target = null
 	if is_instance_valid(_target):
 		var to_target: Vector2 = _target.global_position - global_position
 		var dist: float = to_target.length()
@@ -79,6 +83,9 @@ func _physics_process(delta: float) -> void:
 func take_damage(amount: int) -> void:
 	_hp -= amount
 	damaged.emit(self, _hp)
+	# The hit thud. Quieter than the tower's, because a fight has many more
+	# unit hits than tower hits and the mix would turn into noise.
+	Sfx.play("hit", -5.0)
 	if _hp <= 0:
 		_die()
 
@@ -87,6 +94,8 @@ func _die() -> void:
 		return
 	_dying = true
 	died.emit(self)
+	# The death zap (ASSET_UI_SPEC §5).
+	Sfx.play("death", -3.0)
 	if sprite != null:
 		sprite.play("death")
 		# Let the death animation read before the node disappears.
@@ -157,3 +166,12 @@ func _acquire_tower_target() -> Node2D:
 			best = t
 			best_dist = d
 	return best
+
+
+## Sets the walking direction (1 = right, -1 = left). The AI deploys on the
+## enemy side and has to walk LEFT toward the player tower, so the spawn
+## code sets this instead of letting the unit walk off the right edge for
+## one frame before it finds a target.
+func set_facing(value: int) -> void:
+	_facing = 1 if value >= 0 else -1
+	_update_facing()

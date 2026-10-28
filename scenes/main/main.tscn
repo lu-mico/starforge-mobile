@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://b1starforge_main"]
+[gd_scene load_steps=13 format=3 uid="uid://b1starforge_main"]
 
 [ext_resource type="Script" path="res://src/core/Arena.gd" id="1_arena"]
 [ext_resource type="Script" path="res://src/core/UnitSpawner.gd" id="2_spawner"]
@@ -7,6 +7,9 @@
 [ext_resource type="Script" path="res://src/ui/CardBar.gd" id="5_cardbar"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/icon_mineral_32.png" id="6_mineral"]
 [ext_resource type="Script" path="res://src/buildings/Tower.gd" id="7_towerscript"]
+[ext_resource type="Texture2D" path="res://assets/sprites/towers/player_tower_intact.png" id="8_playertower"]
+[ext_resource type="Script" path="res://src/core/AiOpponent.gd" id="9_ai"]
+[ext_resource type="Script" path="res://src/ui/ResultOverlay.gd" id="10_result"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dummy"]
 size = Vector2(40, 60)
@@ -28,7 +31,7 @@ position = Vector2(620, 640)
 script = ExtResource("7_towerscript")
 tower_kind = "enemy"
 team = 1
-max_hp = 200
+max_hp = 1200
 
 [node name="TowerSprite" type="Sprite2D" parent="EnemyTower"]
 texture_filter = 1
@@ -38,14 +41,34 @@ offset = Vector2(0, -30)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyTower"]
 shape = SubResource("RectangleShape2D_dummy")
 
-[node name="PlayerSpawn" type="Marker2D" parent="."]
+[node name="PlayerTower" type="StaticBody2D" parent="."]
 position = Vector2(100, 640)
+script = ExtResource("7_towerscript")
+tower_kind = "player"
+team = 0
+max_hp = 1200
+
+[node name="TowerSprite" type="Sprite2D" parent="PlayerTower"]
+texture_filter = 1
+texture = ExtResource("8_playertower")
+offset = Vector2(0, -30)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerTower"]
+shape = SubResource("RectangleShape2D_dummy")
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(180, 640)
 
 [node name="UnitSpawner" type="Node" parent="."]
 script = ExtResource("2_spawner")
 spawn_point = NodePath("../PlayerSpawn")
 lane_y = 640.0
 player_team = 0
+
+[node name="AiOpponent" type="Node" parent="."]
+script = ExtResource("9_ai")
+lane_y = 640.0
+spawn_x = 560.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -75,7 +98,7 @@ offset_top = 1096.0
 offset_right = 704.0
 offset_bottom = 1128.0
 mouse_filter = 2
-text = "Tap a card, then tap the lane"
+text = "Tap a card, then the lane"
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1.0)
 theme_override_font_sizes/font_size = 18
 
@@ -90,3 +113,6 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("5_cardbar")
+
+[node name="ResultOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("10_result")
