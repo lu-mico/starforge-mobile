@@ -194,12 +194,10 @@ func set_affordable(affordable: bool) -> void:
 
 
 func _on_gui_input(event: InputEvent) -> void:
-	var pressed := false
-	if event is InputEventMouseButton:
-		var mb := event as InputEventMouseButton
-		pressed = mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT
-	elif event is InputEventScreenTouch:
-		pressed = (event as InputEventScreenTouch).pressed
-	if pressed:
+	# TapInput, not a raw event check: on Android one physical tap arrives
+	# TWICE (a real screen touch plus the mouse event Godot emulates from
+	# it). Counting both made a tap select the card and immediately
+	# deselect it, so the card hand was dead on a real phone.
+	if TapInput.is_press(event):
 		accept_event()
 		card_pressed.emit(self)

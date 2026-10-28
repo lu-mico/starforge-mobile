@@ -59,14 +59,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _match_over or _selected_card == "":
 		return
 	var tap := Vector2.INF
-	if event is InputEventMouseButton:
-		var mb := event as InputEventMouseButton
-		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			tap = _to_world(mb.position)
-	elif event is InputEventScreenTouch:
-		var st := event as InputEventScreenTouch
-		if st.pressed:
-			tap = _to_world(st.position)
+	# TapInput, not a raw event check: on Android one physical tap arrives
+	# TWICE (a real screen touch plus the mouse event Godot emulates from
+	# it). Without this, a single lane tap deployed TWO units.
+	if TapInput.is_press(event):
+		if event is InputEventMouseButton:
+			tap = _to_world((event as InputEventMouseButton).position)
+		elif event is InputEventScreenTouch:
+			tap = _to_world((event as InputEventScreenTouch).position)
 	if tap == Vector2.INF:
 		return
 	if absf(tap.y - spawner.lane_y) > LANE_TAP_BAND:
