@@ -37,6 +37,8 @@ fail on a broken export:
                      32->16 downscale in >= 20% of the pixels
   G7  badges         all 144 px opaque, every border px is ink, the three
                      badges stay > 20 differing pixels apart
+  G8  consistency    the review strip / review grid cells are byte-identical
+                     to the single frames they were cut from
 
 Exits 1 if any gate fails.
 """
@@ -714,13 +716,13 @@ def main():
                                       exported["icon_mineral_32"])
     gates.append(("G6", "mineral_16 (colours/1px runs/ink ring/downscale)", probs))
 
-    # G8 - the review artefacts match the shipped frames byte for byte
-    gates.append(("G8", "strip/grid cells == single frames (byte-identical)",
-                  verify_consistency(by_name)))
-
     # G7 - badges
     gates.append(("G7", "badges (opaque/ink border/pairwise)",
                   check_badges(badges)))
+
+    # G8 - the review artefacts match the shipped frames byte for byte
+    gates.append(("G8", "strip/grid cells == single frames (byte-identical)",
+                  verify_consistency(by_name)))
 
     failed = 0
     for gid, label, probs in gates:
