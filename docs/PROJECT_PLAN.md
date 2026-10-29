@@ -28,10 +28,10 @@ win/lose loop needed exactly two towers on one lane to be reachable at all.
 - ✅ **Tap-to-deploy verified on device** — card select → lane deploy → unit on the lane, minerals 10 → 7 (Marine = 3). Found and fixed a real bug doing this, see below.
 - ✅ **Both outcomes seen on a real device** — DEFEAT (the AI pushed and killed the player tower) and VICTORY (siege tank + marines took the enemy tower, green "Enemy tower destroyed" + RESTART). Both on `Medium_Phone_API_36.1`, same APK as shipped. Headless gates alone never proved this.
 - ✅ Full loop reachable both ways — measured headless: idle player loses in 32.6s, active player wins in 28.6s
-- ⚠️ **Match length is ~30s, not the 3 minutes the deliverable names** — measured, not estimated. Tower HP and AI cadence are tuned for a quick loop, not a 3-minute match. The deliverable is therefore **met in substance** (a complete match vs AI on your phone, both outcomes reachable) but **not met in the "3-minute" wording**. Retuning HP/cadence vs restating the target is **with Luminary** (COO recommends restating the wording, not re-tuning the numbers — the number change would need a re-balance plus a full gate re-run plus another device pass, which is not worth it for a wording change). **Until that answer lands, no numbers move and no "3-minute" tick goes in.** v0.3 owns pacing either way.
-- **Deliverable:** finish a match vs the AI on your phone — **met, with the "3-minute" wording flagged above**
+- ✅ **Match length ~30s — a fast-paced duel (measured, not estimated)** — Tower HP and AI cadence are tuned for a quick loop: a v0.1 match runs **~30 seconds**, and both outcomes are reachable on a phone. **Wording decision (Luminary, 2026-10-30 — Option B):** v0.1 is stated as **a ~30-second match / fast-paced duel**, and the **3-minute pacing target moves to v0.3 Pacing Pass**. **No v0.1 numbers change** — lane speed, AI first unit at 18s / one every 9s, and 1200 tower HP all stay exactly as they are. A retune would need a re-balance + a full gate re-run + another device pass, which is not worth it for a wording change.
+- **Deliverable:** finish a match vs the AI on your phone — **met** (v0.1 wording: **~30-second match / fast-paced duel**; the 3-minute pacing target moved to v0.3 on 2026-10-30)
 
-**Status 2026-10-29:** 9/10 done, 1 wording mismatch (match length). Every gate green:
+**Status 2026-10-30:** **10/10 done** — the wording item is closed (Luminary's Option B: restate v0.1 as ~30s / fast-paced duel, 3-minute pacing target to v0.3, no number changes). Every gate green:
 SFX wiring 25, match result 24, UI 118, tower feedback 40, tap input 8, smoke test 14/14.
 
 **Bug found and fixed 2026-10-29 (tap-to-deploy was dead on a real device):**
@@ -47,13 +47,13 @@ real Android event pair and asserts one tap does exactly one thing.
 ### v0.3 — "Pacing Pass" (target **2026-12-06**, re-baselined from 2026-09-26)
 - [ ] 3 lanes + 2 side towers + king tower (pulled forward from v0.1)
 - [ ] Match timer + sudden death
-- [ ] Match length retune (v0.1 matches run ~30s; GDD target is 5-8 min)
+- [ ] Match length retune → **~3 min per match** (the pacing target moved here from v0.1 on 2026-10-30 — v0.1 ships ~30s fast duels; GDD §5 still states 5-8 min, reconcile the exact number at retune kickoff)
 - [ ] Tutorial (3 screens)
 - [ ] Settings menu (audio, controls)
 - [ ] Save/load (player prefs)
 - [ ] Sound + music pass
 - [ ] 1 internal playtest + fix critical bugs
-- **Deliverable:** Smooth 5-min match, tutorial explains the game in 30s
+- **Deliverable:** Smooth ~3-min match (pacing target moved here from v0.1 on 2026-10-30), tutorial explains the game in 30s
 
 ### v0.5 — "Engagement Test" (target **2026-12-20**, re-baselined from 2026-10-10)
 - [ ] Expand to 8 cards (add Reaper, Medic, Stim, Medivac)
@@ -109,14 +109,14 @@ was reported as missed until it was long gone):
 - **2026-11-05** — card hand + deploy + enemy spawner — ✅ landed 10-28 (`86ec446`, `037f012`)
 - **2026-11-12** — win/lose screen + asset pass — ✅ landed 10-28 (`037f012`); playtest still open
 - **2026-10-29** — device playthrough of the v0.1 loop — ✅ done, and it caught the tap-to-deploy bug
-- **2026-11-05** — Luminary call on the match-length target (retune vs restate)
+- **2026-11-05** — Luminary call on the match-length target (retune vs restate) — ✅ landed 2026-10-30: **Option B** (restate the wording; the 3-minute pacing target moves to v0.3, no v0.1 numbers change)
 
 ### Known risks to v0.1
 
 | Risk | Impact | Mitigation |
 |---|---|---|
 | Headless gates pass while the device is broken (the tap bug lived here for 3 days) | Green gates gave false confidence; the real feature was dead on the only surface the user touches | Gates now replay the **real Android event pair** (`tools/accept_tap_input.gd`); every v0.1 change is also verified by installing the APK and driving the actual UI |
-| Match length ~30s vs the 3-minute deliverable | The headline deliverable reads as unmet, or worse, gets reported as met | Measure, don't estimate (`tools/measure_match.gd`); retune HP/cadence or restate the target — Luminary's call, v0.3 owns pacing |
+| Match length ~30s vs the 3-minute deliverable | The headline deliverable reads as unmet, or worse, gets reported as met | **Closed 2026-10-30** — Luminary picked Option B: v0.1 is worded as a ~30-second fast-paced duel, the 3-minute pacing target moves to v0.3 Pacing Pass, and no v0.1 numbers change. Measure, don't estimate (`tools/measure_match.gd`) keeps the wording honest |
 | v0.1 ships 1 lane / 2 towers vs the GDD's 3 lanes + king tower | v0.1 does not exercise side-tower → king-tower activation or multi-lane targeting | Explicitly cut, tracked in v0.3 with its own checklist item |
 
 ## Roles
