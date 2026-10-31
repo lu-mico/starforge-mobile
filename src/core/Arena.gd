@@ -34,6 +34,11 @@ func _ready() -> void:
 	MineralField.minerals_changed.connect(_on_minerals_changed)
 	card_bar.card_selected.connect(_on_card_selected)
 	result_overlay.restart_requested.connect(_on_restart_requested)
+	# Pacing recorder (v0.3 prep): every match starts a fresh record, and
+	# the spawn signals feed the per-card deploy / loss counters.
+	MatchStats.begin_match()
+	spawner.unit_spawned.connect(_on_player_unit_spawned)
+	ai.unit_spawned.connect(_on_enemy_unit_spawned)
 	# The towers add themselves to the "towers" group in their own _ready,
 	# which runs before the parent's, so they are all reachable here.
 	for node in get_tree().get_nodes_in_group("towers"):
@@ -49,6 +54,7 @@ func _on_minerals_changed(current: int, maximum: int) -> void:
 
 
 func _on_card_selected(card_id: String) -> void:
+	MatchStats.note_card_select()
 	_selected_card = card_id
 	if hint_label:
 		hint_label.text = ("Tap the lane to deploy %s" % card_id.capitalize()) \
@@ -71,8 +77,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if absf(tap.y - spawner.lane_y) > LANE_TAP_BAND:
 		return
+	# The tap landed in the band: that is a player action whatever the
+	# outcome (the pacing pass tunes how busy the lane is).
+	MatchStats.note_tap()
 	var deploy_x: float = clampf(tap.x, DEPLOY_MIN_X, DEPLOY_MAX_X)
 	if spawner.spawn_card(_selected_card, deploy_x):
+		MatchStats.note_deploy(_selected_card, UnitRoster.cost(_selected_card))
 		card_bar.clear_selection()
 		_selected_card = ""
 		_on_card_selected("")
@@ -94,6 +104,9 @@ func _on_tower_destroyed(tower: Tower) -> void:
 
 func _end_match(victory: bool) -> void:
 	ai.stop()
+	# Write the match out BEFORE the tree is paused, so the record carries
+	# the final elapsed time of the match.
+	MatchStats.end_match("VICTORY" if victory else "DEFEAT")
 	Sfx.play_result(victory)
 	result_overlay.show_result(victory)
 	if hint_label:
@@ -114,3 +127,26 @@ func _prepare_restart() -> void:
 func _on_restart_requested() -> void:
 	_prepare_restart()
 	get_tree().reload_current_scene()
+
+
+# ---------------------------------------------------------------- telemetry
+
+## A player unit appeared. Remember which card it came from so its death can
+## be counted against that card.
+func _on_player_unit_spawned(unit: Node, card_id: String) -> void:
+	if unit is Unit:
+		(unit as Unit).died.connect(_on_player_unit_died.bind(card_id))
+
+
+func _on_player_unit_died(_unit: Unit, card_id: String) -> void:
+	MatchStats.note_player_unit_lost(card_id)
+
+
+## An enemy unit appeared: its death is a kill for the player.
+func _on_enemy_unit_spawned(unit: Node) -> void:
+	if unit is Unit:
+		(unit as Unit).died.connect(_on_enemy_unit_died)
+
+
+func _on_enemy_unit_died(_unit: Unit) -> void:
+	MatchStats.note_enemy_unit_lost()

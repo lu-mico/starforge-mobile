@@ -24,6 +24,7 @@ window/handheld/orientation="portrait"
 
 MineralField="*res://src/core/MineralField.gd"
 Sfx="*res://src/audio/SfxBank.gd"
+MatchStats="*res://src/core/MatchStats.gd"
 
 [input]
 

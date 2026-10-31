@@ -6,6 +6,10 @@ extends Node
 ##   * KEY_1..KEY_4 spawn at the fixed player spawn point (v0.1 shortcut)
 ##   * spawn_card(id, world_x) deploys at a tapped lane position — this is the
 ##     card-hand flow: tap a card, then tap the lane.
+##
+## `unit_spawned` fires for every player unit with the card id it came from,
+## so the match recorder can count deploys and card losses per card.
+signal unit_spawned(unit: Node, card_id: String)
 
 @export var spawn_point: Node2D
 @export var lane_y: float = 640.0
@@ -59,6 +63,7 @@ func _spawn_at(id: String, world_x: float) -> bool:
 	# The card whoosh: the most important sound in a deploy game, because it
 	# confirms the tap was understood (ASSET_UI_SPEC §5).
 	Sfx.play("deploy")
+	unit_spawned.emit(unit, id)
 	return true
 
 

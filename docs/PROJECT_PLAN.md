@@ -34,6 +34,8 @@ win/lose loop needed exactly two towers on one lane to be reachable at all.
 **Status 2026-10-30:** **10/10 done** — the wording item is closed (Luminary's Option B: restate v0.1 as ~30s / fast-paced duel, 3-minute pacing target to v0.3, no number changes). Every gate green:
 SFX wiring 25, match result 24, UI 118, tower feedback 40, tap input 8, smoke test 14/14.
 
+**Status 2026-10-31:** v0.1 unchanged (10/10) — the night's work went into **v0.3 prep**: the pacing recorder landed, so the Pacing Pass has data to retune against. Full suite re-run green: SFX wiring 25, match result 24, UI 118, tower feedback 40, tap input 8, **pacing stats 27**, smoke test 14/14.
+
 **Bug found and fixed 2026-10-29 (tap-to-deploy was dead on a real device):**
 On Android one physical tap reaches Godot **twice** — the real `InputEventScreenTouch`
 **and** the mouse event Godot emulates from it (`emulate_mouse_from_touch` is on by
@@ -45,6 +47,7 @@ both `UnitCard` and `Arena`. New gate `tools/accept_tap_input.gd` (8 checks) rep
 real Android event pair and asserts one tap does exactly one thing.
 
 ### v0.3 — "Pacing Pass" (target **2026-12-06**, re-baselined from 2026-09-26)
+- ✅ **Pacing telemetry — every match recorded to disk** (landed 2026-10-31) — `src/core/MatchStats.gd` (autoload) writes one JSON record per match (duration, taps, deploys, card selects, minerals, win/loss, per-card deployed/lost/win rate) to `user://stats/matches.jsonl` plus an aggregate `summary.json`. The retune reads real numbers instead of estimates — the same discipline that caught the v0.1 "3-minute" wording. Gate `tools/accept_pacing_stats.gd` (27 checks) plays two matches and reads the file back. Spec: `docs/PACING_DATA.md`
 - [ ] 3 lanes + 2 side towers + king tower (pulled forward from v0.1)
 - [ ] Match timer + sudden death
 - [ ] Match length retune → **~3 min per match** (the pacing target moved here from v0.1 on 2026-10-30 — v0.1 ships ~30s fast duels; GDD §5 still states 5-8 min, reconcile the exact number at retune kickoff)
