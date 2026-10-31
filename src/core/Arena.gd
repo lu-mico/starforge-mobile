@@ -54,8 +54,15 @@ func _on_minerals_changed(current: int, maximum: int) -> void:
 
 
 func _on_card_selected(card_id: String) -> void:
+	# Only a PLAYER tapping a card counts as a card action. The deploy path
+	# clears the selection itself (it must not be counted as a card tap).
 	MatchStats.note_card_select()
 	_selected_card = card_id
+	_update_hint(card_id)
+
+
+## Update the hint line for the current selection.
+func _update_hint(card_id: String) -> void:
 	if hint_label:
 		hint_label.text = ("Tap the lane to deploy %s" % card_id.capitalize()) \
 			if card_id != "" else "Tap a card, then the lane"
@@ -82,10 +89,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	MatchStats.note_tap()
 	var deploy_x: float = clampf(tap.x, DEPLOY_MIN_X, DEPLOY_MAX_X)
 	if spawner.spawn_card(_selected_card, deploy_x):
-		MatchStats.note_deploy(_selected_card, UnitRoster.cost(_selected_card))
 		card_bar.clear_selection()
 		_selected_card = ""
-		_on_card_selected("")
+		_update_hint("")
 
 
 func _to_world(screen_pos: Vector2) -> Vector2:
@@ -131,9 +137,12 @@ func _on_restart_requested() -> void:
 
 # ---------------------------------------------------------------- telemetry
 
-## A player unit appeared. Remember which card it came from so its death can
-## be counted against that card.
+## A player unit appeared. The deploy is counted HERE, not at the tap site,
+## so the keyboard deploy (KEY_1..KEY_4) is counted too — every deploy the
+## player makes has to show up in the pacing data, or the retune tunes
+## against a number that is missing part of the play.
 func _on_player_unit_spawned(unit: Node, card_id: String) -> void:
+	MatchStats.note_deploy(card_id, UnitRoster.cost(card_id))
 	if unit is Unit:
 		(unit as Unit).died.connect(_on_player_unit_died.bind(card_id))
 

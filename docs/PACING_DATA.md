@@ -93,6 +93,41 @@ card that loses its matches is the card to fix.
   scaled frame delta, so `duration_s` is what the player experienced even if
   the engine is running at a different frame rate.
 
+## Verified on a real device (2026-10-31)
+
+The recorder was verified on the Android emulator (`Medium_Phone_API_36.1`,
+APK rebuilt and installed), not only in headless gates:
+
+1. Launch the app, tap the marine card and the lane a few times.
+2. Let the match end.
+3. Pull the files off the device:
+
+```bash
+adb shell run-as com.starforge.game cat files/stats/matches.jsonl
+adb shell run-as com.starforge.game cat files/stats/summary.json
+```
+
+What came off the device after one tap session (6 card taps, 5 lane taps):
+
+```json
+{"actions":15,"card_selects":6,"cards":{"marine":{"alive":0,"deployed":4,"lost":4}},
+ "deploys":4,"duration_s":135.68,"minerals_spent":12,"player_lost":4,"result":"DEFEAT",
+ "schema":1,"taps":5,"build":"0.1.0-alpha.1","ts":"2026-10-31T11:34:11"}
+```
+
+and the summary over it:
+
+```json
+{"matches":1,"victories":0,"defeats":1,"win_rate":0.0,"avg_duration_s":135.68,
+ "avg_deploys":4.0,"avg_actions":15.0,
+ "cards":{"marine":{"deployed":4,"lost":4,"matches_played":1,"matches_won":0,"win_rate":0.0}}}
+```
+
+So the file path, the counters and the aggregate all work on the surface the
+player actually touches. (The first device match on the same build was an idle
+one: `DEFEAT` after 31.6s, zero deploys — the same number the headless
+measurement gives, 32.6s.)
+
 ## The gate
 
 `tools/accept_pacing_stats.gd` (27 checks) plays two full matches — one the
