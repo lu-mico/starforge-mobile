@@ -155,7 +155,7 @@ For v0.1-v0.5: Nagi is sole executor using godogen pipeline + ComfyUI assets.
 - [x] Deploy flow verified **on device**, not only in headless gates (2026-10-29)
 - [ ] No P0 bugs open
 - [ ] Internal playtest (Nagi + Mico) passes
-- [ ] Luminary notified with build link + test path
+- [x] Luminary notified with build link + test path (2026-11-05: package delivered to owner in the Discord thread)
 
 ---
 
@@ -177,3 +177,35 @@ For v0.1-v0.5: Nagi is sole executor using godogen pipeline + ComfyUI assets.
 2. **Cross-project resource sharing:** can Starlight Jump / Suika tooling (Java17 path, Gradle configs) be lifted into a shared `_tools/` repo?
 3. **Telemetry:** which analytics SDK? (Firebase / Sentry / custom / none)
 4. **PvP for v1.5:** do we self-host or use PlayFab/Photon?
+
+---
+
+## v0.1 playtest delivery — 2026-11-05 (HEAD `1dc4a90`)
+
+**What was delivered**
+- Android build from clean HEAD `1dc4a90` (release template, arm64 only):
+  `build/starforge.apk` 26.47 MB, sha256 `00accb8ea8301d5c…`, signed with the project's
+  debug keystore (CN=Godot, SHA-256 `22038ef4…`) → installs over the 10/31 build
+  without uninstalling.
+- Web build (Mico's export, `build/play/`) → http://127.0.0.1:8123/play/index.html
+- Discord thread `#proj-game-starlight-jump › starforge-mobile`: package posted as
+  **2 parts** (13.24 MB each) because Discord caps attachments near 25 MB and the
+  engine `.so` is already at the deflate limit (level 9 saves 45 KB).
+
+**Verified on device (emulator `Medium_Phone_API_36.1`)**
+- `adb install` → Success; launch → Godot 4.6 / Vulkan 1.3 (llvmpipe), main loop up.
+- Board renders: both towers, lanes, 4-card bar, mineral HUD.
+- A full match runs to a verdict (idle player loses at ~32 s, matching the measured
+  32.6 s idle-loss baseline).
+- **Tap-to-deploy confirmed**: card tap changes the card bar, lane tap drops the
+  mineral counter (8 → 7) and spawns a unit at the player tower.
+- **RESTART confirmed working**: the button sits at viewport centre +250..334
+  (`src/ui/ResultOverlay.gd`), i.e. game (360, 932); tapping it dismisses the
+  overlay (scrim brightness 1245 → 8224) and the board returns.
+
+**Gate status at HEAD** — 25 / 24 / 118 / 40 / 8 / 27 + smoke 14/14, all green.
+
+**Open follow-ups**
+- v0.3 Pacing Pass (3-minute target) is still the pacing owner — unchanged.
+- The frozen-unit bug (`src/units/Unit.gd` freed-instance check) stays unfixed by
+  design; it is a balance change, tracked in v0.3.
