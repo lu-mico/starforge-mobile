@@ -167,6 +167,10 @@ For v0.1-v0.5: Nagi is sole executor using godogen pipeline + ComfyUI assets.
 - **gh CLI** for repo operations
 - **godogen pipeline** for code generation
 - **Local Python + PIL** for sprite assets (`tools/*_sprite_generator.py`) and local `wave` synthesis for SFX — 0 cost, no API keys
+- **Web render check** — `tools/check_web_render.sh` (plus `tools/web_render_check.js`):
+  asserts the web build serves, substituted its `$GODOT_URL` placeholder, booted an engine
+  with a real WebGL2 context, and drew the board. Run it before calling any web build
+  delivered.
 
 ---
 
@@ -204,6 +208,14 @@ For v0.1-v0.5: Nagi is sole executor using godogen pipeline + ComfyUI assets.
   overlay (scrim brightness 1245 → 8224) and the board returns.
 
 **Gate status at HEAD** — 25 / 24 / 118 / 40 / 8 / 27 + smoke 14/14, all green.
+- **Web build renders** (verified 2026-11-05, 20:0x): `tools/check_web_render.sh` drives
+  headless Chrome over CDP with software ANGLE
+  (`--enable-unsafe-swiftshader --use-angle=swiftshader`), confirms the engine boots with
+  a WebGL2 context, and asserts the canvas actually drew — the colour histogram is an
+  exact match to the native Android render: `(107,114,128)` 86%, `(170,179,194)` UI grey,
+  `(42,63,102)` board blue, `(200,212,228)` text, with the HUD band at y0-64 (61 distinct
+  colours) and the 4-card bar at y1088-1152 (54). The earlier "headless Chrome has no
+  WebGL2" blocker was a missing flag, not a sandbox limit.
 
 **Open follow-ups**
 - v0.3 Pacing Pass (3-minute target) is still the pacing owner — unchanged.
