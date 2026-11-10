@@ -48,13 +48,19 @@ func _initialize() -> void:
 	# with nothing left to do, and the process then hangs instead of exiting.
 	# The 11-07 run did exactly that (22 minutes of "Process still running").
 	# This timer guarantees the harness always terminates.
+	#
+	# The budget is in REAL seconds: the timer must ignore Engine.time_scale
+	# (the sweep runs the game at 10x). With the scale applied, a 900s budget
+	# expired after 90 real seconds and cut the sweep off after 2 of 4
+	# configs — the 11-10 run lost half the grid to this.
 	var watchdog := Timer.new()
-	watchdog.wait_time = 900.0
+	watchdog.wait_time = 1800.0
 	watchdog.one_shot = true
 	watchdog.autostart = true
+	watchdog.ignore_time_scale = true
 	root.add_child(watchdog)
 	watchdog.timeout.connect(func() -> void:
-		print("=== sweep ABORTED: watchdog fired (900s) ===")
+		print("=== sweep ABORTED: watchdog fired (1800 real s) ===")
 		quit(2))
 
 	print("=== Starforge v0.3 pacing sweep (tower HP x AI cadence) ===")
@@ -63,6 +69,7 @@ func _initialize() -> void:
 		var hp := int(cfg["tower_hp"])
 		var first := float(cfg["ai_first"])
 		var interval := float(cfg["ai_interval"])
+		print("--- config tower_hp=%d ai_first=%.1f ai_interval=%.1f ---" % [hp, first, interval])
 		var idle := await _run_match("idle", hp, first, interval)
 		var defend := await _run_match("defender", hp, first, interval)
 		var marine := await _run_match("marine", hp, first, interval)
