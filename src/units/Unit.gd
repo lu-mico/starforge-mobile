@@ -51,7 +51,16 @@ func _physics_process(delta: float) -> void:
 		return
 	# A destroyed tower stays in the tree (its collision is off), so a cached
 	# target has to be re-checked or the unit keeps shooting a corpse.
-	if _target is Tower and bool((_target as Tower).is_destroyed()):
+	#
+	# The validity check comes FIRST (v0.3 pacing pass). A unit that died and
+	# was freed leaves a dangling reference, and asking a freed instance for
+	# its type raises "Left operand of 'is' is a previously freed instance" on
+	# EVERY frame. The error aborts this function, so the unit freezes for
+	# good: it never walks, never shoots, and the match's winner is decided by
+	# that crash instead of by the fight.
+	if not is_instance_valid(_target):
+		_target = null
+	elif _target is Tower and bool((_target as Tower).is_destroyed()):
 		_target = null
 	if is_instance_valid(_target):
 		var to_target: Vector2 = _target.global_position - global_position
